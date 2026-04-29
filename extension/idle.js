@@ -3,7 +3,7 @@ let idleTimer = null;
 
 function resetIdle() {
   clearTimeout(idleTimer);
-  idleTimer = setTimeout(triggerToast, IDLE_MS);
+  idleTimer = setTimeout(() => triggerToast(), IDLE_MS);
 }
 
 ['mousemove', 'keydown', 'scroll', 'click'].forEach(ev =>
