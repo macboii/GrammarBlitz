@@ -5,7 +5,7 @@
 ```json
 {
   "manifest_version": 3,
-  "name": "GrammarBlitz",
+  "name": "GrammarSmash",
   "version": "1.0.0",
   "description": "Fast grammar shooter game",
   "permissions": ["storage", "tabs"],

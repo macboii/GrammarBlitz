@@ -1,6 +1,6 @@
 # Skill: Game State Machine
 
-GrammarBlitz가 사용하는 상태 머신 패턴입니다.
+GrammarSmash가 사용하는 상태 머신 패턴입니다.
 
 ## 상태 정의
 

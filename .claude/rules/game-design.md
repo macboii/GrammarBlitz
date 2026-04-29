@@ -20,7 +20,7 @@ INIT → RUNNING → FAIL → RESULT → RESTART(→ RUNNING)
 - 상태 전환은 반드시 `setState(newState)` 함수를 통해서만
 - 상태 바깥에서 직접 변수 변경 금지
 
-## GrammarBlitz 게임 규칙 (Shooter)
+## GrammarSmash 게임 규칙 (Shooter)
 
 - 플레이어: 화면 하단 중앙, ← → 키 / 마우스로 좌우 이동
 - 문장들이 화면 상단에서 낙하
@@ -62,7 +62,7 @@ maxCombo = Math.max(maxCombo, combo);
 
 ## Best Score / New Record (Phase 5)
 
-- Best Score는 `localStorage.grammarBlitzBest`에 저장 (현재 구현 완료)
+- Best Score는 `localStorage.grammarSmashBest`에 저장 (현재 구현 완료)
 - 신기록 갱신 시 Result Screen에 `🔥 New Record!` 플래시 애니메이션
 - "한 번 더" 유도가 목적 — 로그인/랭킹 없이 로컬 Best Score만으로 충분
 

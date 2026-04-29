@@ -1,4 +1,4 @@
-# GrammarBlitz — Chrome Extension
+# GrammarSmash — Chrome Extension
 
 ## 프로젝트 개요
 
@@ -26,7 +26,7 @@
  ├── manifest.json
  ├── background.js     # service worker — 아이콘 클릭/toast 메시지 → 새 탭 오픈
  ├── index.html        # 게임 페이지 (새 탭으로 열림)
- ├── game.js           # GrammarBlitz 게임 엔진 ✓
+ ├── game.js           # GrammarSmash 게임 엔진 ✓
  ├── idle.js           # Idle 감지 content script ✓
  ├── toast.js          # Toast UI content script ✓
  ├── main.js           # 초기화 + JSON 로드

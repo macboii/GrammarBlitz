@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'grammarblitz_last_shown';
+const STORAGE_KEY = 'grammarsmash_last_shown';
 const ONE_DAY_MS = 86_400_000;
 
 async function canShow() {
@@ -63,7 +63,7 @@ function createToastEl() {
     </style>
     <div class="wrap">
       <span class="msg">⚡ Quick grammar break?</span>
-      <button class="play">Play GrammarBlitz</button>
+      <button class="play">Play GrammarSmash</button>
       <button class="close">✕</button>
     </div>`;
   return el;

@@ -1,6 +1,6 @@
 # Skill: Falling Sentence System
 
-GrammarBlitz의 낙하 문장 생성 + 총알 충돌 시스템입니다.
+GrammarSmash의 낙하 문장 생성 + 총알 충돌 시스템입니다.
 
 ## FallingSentence 구조
 

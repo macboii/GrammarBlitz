@@ -60,8 +60,8 @@ const FAIL_LABELS = {
 };
 
 _showResult() {
-  const best = Math.max(this.score, parseInt(localStorage.getItem('grammarBlitzBest') || '0'));
-  localStorage.setItem('grammarBlitzBest', best);
+  const best = Math.max(this.score, parseInt(localStorage.getItem('grammarSmashBest') || '0'));
+  localStorage.setItem('grammarSmashBest', best);
 
   document.querySelector('.fail-label').textContent = FAIL_LABELS[this.failReason];
   document.querySelector('.fail-sentence').textContent = `"${this.failSentence.sentence}"`;

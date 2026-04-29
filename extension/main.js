@@ -17,12 +17,12 @@ async function loadData() {
 }
 
 async function init() {
-  const best = localStorage.getItem('grammarBlitzBest') || '0';
+  const best = localStorage.getItem('grammarSmashBest') || '0';
   document.getElementById('hud-best').textContent = `Best: ${best}`;
 
   const canvas = document.getElementById('canvas');
   const data = await loadData();
-  new GrammarBlitz(canvas, data);
+  new GrammarSmash(canvas, data);
 }
 
 init();

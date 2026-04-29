@@ -35,7 +35,7 @@ $ARGUMENTS 값에 따라 해당 섹션만 출력한다.
 **Chrome 로드:**
 ```
 chrome://extensions/ → 개발자 모드 ON → 새로고침(↺)
-→ 새 탭 열기 → GrammarBlitz 게임 화면 확인
+→ 새 탭 열기 → GrammarSmash 게임 화면 확인
 ```
 
 **게임플레이:**
@@ -58,7 +58,7 @@ chrome://extensions/ → 개발자 모드 ON → 새로고침(↺)
 
 **데이터/스토리지:**
 ```
-[ ] DevTools → Application → Local Storage → grammarBlitzBest 저장 확인
+[ ] DevTools → Application → Local Storage → grammarSmashBest 저장 확인
 [ ] DevTools → Network → Offline 후 새 탭 정상 동작 (fallback data 사용)
 [ ] DevTools → Network 탭에서 외부 요청 0건 확인
 ```
@@ -70,7 +70,7 @@ chrome://extensions/ → 개발자 모드 ON → 새로고침(↺)
 **Phase 1 항목 전체 재확인 후 추가 검증:**
 ```
 [ ] 웹 페이지에서 45초 가만히 있으면 Toast 등장 (하단 우측)
-[ ] Toast "Play GrammarBlitz" 클릭 → 게임 팝업 오픈
+[ ] Toast "Play GrammarSmash" 클릭 → 게임 팝업 오픈
 [ ] Toast 5초 후 자동 닫힘
 [ ] 게임 후 당일 Toast 재노출 안 됨 확인
 [ ] 다음 날(또는 DevTools Storage 초기화 후) Toast 다시 등장 확인

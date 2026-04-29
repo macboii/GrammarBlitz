@@ -24,7 +24,7 @@ resetIdle();
 ## 노출 제한 (`chrome.storage.local`)
 
 ```js
-const STORAGE_KEY = 'grammarblitz_last_shown';
+const STORAGE_KEY = 'grammarsmash_last_shown';
 const ONE_DAY_MS = 86_400_000;
 
 async function canShow() {

@@ -142,7 +142,7 @@ class FloatingScore {
   }
 }
 
-class GrammarBlitz {
+class GrammarSmash {
   constructor(canvas, data) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
@@ -184,7 +184,7 @@ class GrammarBlitz {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#facc15';
     ctx.font = 'bold 28px monospace';
-    ctx.fillText('GrammarBlitz', CANVAS_WIDTH / 2, 60);
+    ctx.fillText('GrammarSmash', CANVAS_WIDTH / 2, 60);
 
     ctx.fillStyle = '#9ca3af';
     ctx.font = '12px monospace';
@@ -249,10 +249,10 @@ class GrammarBlitz {
   }
 
   _showResult() {
-    const prev = parseInt(localStorage.getItem('grammarBlitzBest') || '0');
+    const prev = parseInt(localStorage.getItem('grammarSmashBest') || '0');
     const isNewRecord = this.score > prev;
     const best = Math.max(this.score, prev);
-    localStorage.setItem('grammarBlitzBest', best);
+    localStorage.setItem('grammarSmashBest', best);
 
     document.querySelector('.fail-label').textContent = FAIL_LABELS[this.failReason];
     document.querySelector('.fail-sentence').textContent = `"${this.failSentence.sentence}"`;

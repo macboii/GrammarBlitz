@@ -5,7 +5,7 @@
 
 ---
 
-## Phase 1 — GrammarBlitz 게임 엔진 `진행중`
+## Phase 1 — GrammarSmash 게임 엔진 `진행중`
 
 > **완료 기준**: `index.html`을 브라우저에서 직접 열어 슈터 게임 전체 루프 동작 확인
 > **최종 검증**: `/test-extension 1` 실행 후 전 항목 통과
@@ -43,7 +43,7 @@
 
 | # | 작업 | 최소 검증 | 상태 |
 |---|------|-----------|------|
-| 4-1 | `icon.png` 128×128 교체 (GrammarBlitz 브랜딩) | Chrome Extensions 페이지 아이콘 표시 | 완료 |
+| 4-1 | `icon.png` 128×128 교체 (GrammarSmash 브랜딩) | Chrome Extensions 페이지 아이콘 표시 | 완료 |
 | 4-2 | Chrome Web Store 패키징 + 스토어 설명 | CWS 업로드 오류 없음 | 완료 |
 
 ## Phase 5 — 콤보 + 재플레이 동기 시스템 `예정`
