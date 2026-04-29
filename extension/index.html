@@ -174,6 +174,21 @@
       margin-top: 2px;
     }
 
+    #result-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      align-items: start;
+    }
+
+    #result-left, #result-right {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
+
     #nickname-section {
       width: 100%;
       display: none;
@@ -243,7 +258,7 @@
 
     #lb-list {
       width: 100%;
-      max-height: 120px;
+      max-height: 180px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -276,7 +291,7 @@
 
     #review-list {
       width: 100%;
-      max-height: 140px;
+      max-height: 120px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -325,31 +340,37 @@
     </div>
 
     <div id="result">
-      <div class="fail-reason">
-        <p class="fail-label"></p>
-        <p class="fail-sentence"></p>
-        <p class="fail-explanation"></p>
-      </div>
-      <p class="score-msg"></p>
-      <p class="best-msg"></p>
-      <p class="combo-msg"></p>
-      <p class="level-msg"></p>
+      <div id="result-cols">
 
-      <div id="nickname-section">
-        <p class="nickname-label">🏆 Enter your name for the leaderboard (once):</p>
-        <div class="nickname-row">
-          <input id="nickname-input" type="text" maxlength="20" placeholder="Your name" autocomplete="off" />
-          <button id="btn-submit-nick">Submit</button>
+        <div id="result-left">
+          <div id="nickname-section">
+            <p class="nickname-label">🏆 Enter your name for the leaderboard (once):</p>
+            <div class="nickname-row">
+              <input id="nickname-input" type="text" maxlength="20" placeholder="Your name" autocomplete="off" />
+              <button id="btn-submit-nick">Submit</button>
+            </div>
+          </div>
+          <div id="leaderboard-section">
+            <p class="lb-title">🏆 Leaderboard</p>
+            <p id="lb-rank-msg"></p>
+            <div id="lb-list"></div>
+          </div>
         </div>
-      </div>
 
-      <div id="leaderboard-section">
-        <p class="lb-title">🏆 Leaderboard</p>
-        <p id="lb-rank-msg"></p>
-        <div id="lb-list"></div>
-      </div>
+        <div id="result-right">
+          <div class="fail-reason">
+            <p class="fail-label"></p>
+            <p class="fail-sentence"></p>
+            <p class="fail-explanation"></p>
+          </div>
+          <p class="score-msg"></p>
+          <p class="best-msg"></p>
+          <p class="combo-msg"></p>
+          <p class="level-msg"></p>
+          <div id="review-list"></div>
+        </div>
 
-      <div id="review-list"></div>
+      </div>
       <p class="cta-msg">TextBoi fixes this instantly ⚡</p>
       <div class="buttons">
         <a id="btn-textboi" href="https://textboi.ai" target="_blank">Try TextBoi →</a>
