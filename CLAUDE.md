@@ -24,10 +24,11 @@
 ```
 /extension
  ├── manifest.json
- ├── index.html        # 게임 페이지 (Action Popup)
+ ├── background.js     # service worker — 아이콘 클릭/toast 메시지 → 새 탭 오픈
+ ├── index.html        # 게임 페이지 (새 탭으로 열림)
  ├── game.js           # GrammarBlitz 게임 엔진 ✓
- ├── idle.js           # Idle 감지 (content script) — Phase 2
- ├── toast.js          # Toast UI (content script) — Phase 2
+ ├── idle.js           # Idle 감지 content script ✓
+ ├── toast.js          # Toast UI content script ✓
  ├── main.js           # 초기화 + JSON 로드
  ├── data/
  │    └── grammar.json  # isCorrect + explanation 필드 포함 ✓
@@ -40,7 +41,7 @@
 ## 게임 루프
 
 ```
-RUNNING → FAIL → RESULT → RESTART(→ RUNNING)
+INIT → RUNNING → FAIL → RESULT → RESTART(→ RUNNING)
 ```
 
 ---

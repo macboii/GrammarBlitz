@@ -25,9 +25,9 @@
 
 | # | 작업 | 최소 검증 | 상태 |
 |---|------|-----------|------|
-| 2-1 | `idle.js`: mousemove/keydown/scroll 감지, 45초 타이머 | DevTools console에서 타이머 리셋 확인 | 대기 |
-| 2-2 | `toast.js`: 하단 우측 Toast UI + 5초 자동 닫힘 | Toast 렌더링 + 버튼 클릭 시 팝업 오픈 | 대기 |
-| 2-3 | 노출 제한: `chrome.storage.local`로 하루 1회 제한 | 게임 후 당일 재노출 안 됨 확인 | 대기 |
+| 2-1 | `idle.js`: mousemove/keydown/scroll 감지, 45초 타이머 | DevTools console에서 타이머 리셋 확인 | 완료 |
+| 2-2 | `toast.js`: 하단 우측 Toast UI + 5초 자동 닫힘 | Toast 렌더링 + 버튼 클릭 시 팝업 오픈 | 완료 |
+| 2-3 | 노출 제한: `chrome.storage.local`로 하루 1회 제한 | 게임 후 당일 재노출 안 됨 확인 | 완료 |
 
 ## Phase 3 — 통합 + 폴리시 `예정`
 
@@ -36,8 +36,8 @@
 
 | # | 작업 | 최소 검증 | 상태 |
 |---|------|-----------|------|
-| 3-1 | Toast → 팝업 전환 애니메이션 + 스타일 통일 | 시각적 깨짐 없음 | 대기 |
-| 3-2 | 전체 흐름 통합 테스트 (Idle → Toast → Game → Result → CTA) | 퍼널 5단계 연속 동작 | 대기 |
+| 3-1 | Toast → 팝업 전환 애니메이션 + 스타일 통일 | 시각적 깨짐 없음 | 완료 |
+| 3-2 | 전체 흐름 통합 테스트 (Idle → Toast → Game → Result → CTA) | 퍼널 5단계 연속 동작 | 완료 |
 
 ## Phase 4 — 배포 `예정`
 
