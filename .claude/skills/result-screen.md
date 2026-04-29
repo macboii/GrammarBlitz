@@ -31,32 +31,43 @@ TextBoi fixes this instantly ⚡
 Tip: {randomTip}
 ```
 
+## 레이아웃 제약
+
+- `#result`는 `position: absolute; inset: 0` — 캔버스(400px) 안에서 스크롤 없이 한 화면에 맞아야 함
+- padding: `8px 16px`, gap: `4px` 유지 (더 늘리면 오버플로우 발생)
+- `#lb-list` max-height: `140px`, `#review-list` max-height: `80px` (이 이상 키우면 하단 CTA 밀림)
+
 ## HTML 구조
 
 ```html
-<div id="result">  <!-- overflow-y: auto; justify-content: flex-start -->
-  <div class="fail-reason">...</div>
-  <p class="score-msg"></p>
-  <p class="best-msg"></p>      <!-- 🔥 New Record! or Best: N -->
-  <p class="combo-msg"></p>     <!-- Max combo: xN (≥2일 때만) -->
+<div id="result">  <!-- padding: 8px 16px; gap: 4px; overflow-y: auto -->
 
-  <!-- 닉네임 입력 (최초 1회, display:none → flex) -->
-  <div id="nickname-section">
-    <p class="nickname-label">🏆 Enter your name for the leaderboard (once):</p>
-    <div class="nickname-row">
-      <input id="nickname-input" type="text" maxlength="20" />
-      <button id="btn-submit-nick">Submit</button>
+  <!-- 2컬럼 그리드 — 전체 너비 -->
+  <div id="result-cols">  <!-- grid-template-columns: 1fr 1fr; gap: 8px -->
+
+    <div id="result-left">
+      <!-- 닉네임 입력 (최초 1회, display:none → flex) -->
+      <div id="nickname-section">...</div>
+      <!-- 리더보드 (제출 후, display:none → flex) -->
+      <div id="leaderboard-section">
+        <p class="lb-title">🏆 Leaderboard</p>
+        <p id="lb-rank-msg"></p>   <!-- "You are #N on the leaderboard" -->
+        <div id="lb-list"></div>   <!-- Top 50, max-height: 140px, overflow-y: auto -->
+      </div>
     </div>
+
+    <div id="result-right">
+      <div class="fail-reason">...</div>
+      <p class="score-msg"></p>
+      <p class="best-msg"></p>      <!-- 🔥 New Record! or Best: N -->
+      <p class="combo-msg"></p>     <!-- Max combo: xN (≥2일 때만) -->
+      <p class="level-msg"></p>     <!-- Level reached: LvN -->
+      <div id="review-list"></div>  <!-- max-height: 80px -->
+    </div>
+
   </div>
 
-  <!-- 리더보드 (제출 후, display:none → flex) -->
-  <div id="leaderboard-section">
-    <p class="lb-title">🏆 Leaderboard</p>
-    <p id="lb-rank-msg"></p>   <!-- "You are #N on the leaderboard" -->
-    <div id="lb-list"></div>   <!-- Top 50, max-height: 120px, overflow-y: auto -->
-  </div>
-
-  <div id="review-list"></div>
+  <!-- 전체 너비 — 컬럼 밖 -->
   <p class="cta-msg">TextBoi fixes this instantly ⚡</p>
   <div class="buttons">
     <a id="btn-textboi" href="https://textboi.ai" target="_blank">Try TextBoi →</a>

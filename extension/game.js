@@ -91,9 +91,17 @@ class FallingSentence {
     this.fallSpeed = fallSpeed;
     this.passed = false;
     this.hit = false;
+    this.flashTimer = 0;
+    this.flashDuration = 1.2;
   }
 
-  update(dt) { this.y += this.fallSpeed * dt; }
+  get isFlashing() { return this.flashTimer < this.flashDuration; }
+
+  update(dt) {
+    this.flashTimer += dt;
+    const speed = this.isFlashing ? this.fallSpeed * 0.5 : this.fallSpeed;
+    this.y += speed * dt;
+  }
 
   _truncate(ctx, text, maxW) {
     if (ctx.measureText(text).width <= maxW) return text;
@@ -102,7 +110,13 @@ class FallingSentence {
   }
 
   draw(ctx) {
-    ctx.fillStyle = this.isCorrect ? '#15803d' : '#b91c1c';
+    let bgColor;
+    if (this.isFlashing) {
+      bgColor = Math.floor(this.flashTimer * 7) % 2 === 0 ? '#15803d' : '#b91c1c';
+    } else {
+      bgColor = this.isCorrect ? '#15803d' : '#b91c1c';
+    }
+    ctx.fillStyle = bgColor;
     ctx.beginPath();
     ctx.roundRect(this.x, this.y, this.width, this.height, 5);
     ctx.fill();
@@ -110,7 +124,12 @@ class FallingSentence {
     ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'right';
-    ctx.fillText(this.isCorrect ? 'CORRECT' : 'WRONG', this.x + this.width - 6, this.y + 11);
+    if (this.isFlashing) {
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fillText('⚡ x2', this.x + this.width - 6, this.y + 11);
+    } else {
+      ctx.fillText(this.isCorrect ? 'CORRECT' : 'WRONG', this.x + this.width - 6, this.y + 11);
+    }
 
     ctx.fillStyle = '#fff';
     ctx.font = '12px monospace';
@@ -613,7 +632,9 @@ class GrammarSmash {
           this.setState(GAME_STATE.FAIL);
           return true;
         }
-        this._addScore(2, s.x + s.width / 2, s.y);
+        const pts = s.isFlashing ? 4 : 2;
+        this._addScore(pts, s.x + s.width / 2, s.y);
+        if (s.isFlashing) this.floatingScores.push(new FloatingScore(s.x + s.width / 2, s.y - 18, '⚡ x2', '#facc15'));
         this.sound.hitWrong();
       }
     }
@@ -634,7 +655,9 @@ class GrammarSmash {
       if (s.hit || s.passed || !this._playerOverlaps(s)) continue;
       s.hit = true;
       if (s.isCorrect) {
-        this._addScore(3, s.x + s.width / 2, s.y);
+        const pts = s.isFlashing ? 6 : 3;
+        this._addScore(pts, s.x + s.width / 2, s.y);
+        if (s.isFlashing) this.floatingScores.push(new FloatingScore(s.x + s.width / 2, s.y - 18, '⚡ x2', '#facc15'));
         this.sound.eatCorrect();
       } else {
         this.failSentence = s.item;
