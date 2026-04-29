@@ -11,32 +11,52 @@
   "She goes to the market every day"
   → 'Goes' is correct — third-person singular needs -s.
 
-Score: {score}  |  Best: {bestScore}
+Score: {score}   Best: {best}   🔥 New Record!   Max combo: x{n}
 
-[세션 리뷰 — 이번 게임에서 등장한 최근 5문장]
-  ✅ "She goes to the market every day"
-     → 'Goes' is correct — ...
-  ❌ "He go to school yesterday"
-     → 'Go' → 'went': past tense of 'go'.
+[닉네임 입력 — 최초 1회만]
+  🏆 Enter your name for the leaderboard (once):
+  [________]  [Submit]
 
+[리더보드 — 닉네임 제출/기존 닉네임 자동 제출 후]
+  🏆 Leaderboard
+  You are #12 on the leaderboard
+  #1  Alex    50
+  #2  Jin     45
+  ...
+  #12 You     18  ← 초록 하이라이트
+
+[세션 리뷰 — 최근 5문장]
 TextBoi fixes this instantly ⚡
-
 [Try TextBoi →]   [Play Again]
-
 Tip: {randomTip}
 ```
 
 ## HTML 구조
 
 ```html
-<div id="result">
-  <div class="fail-reason">
-    <p class="fail-label"></p>
-    <p class="fail-sentence"></p>
-    <p class="fail-explanation"></p>
-  </div>
+<div id="result">  <!-- overflow-y: auto; justify-content: flex-start -->
+  <div class="fail-reason">...</div>
   <p class="score-msg"></p>
-  <div id="review-list"></div>   <!-- JS로 동적 렌더링 -->
+  <p class="best-msg"></p>      <!-- 🔥 New Record! or Best: N -->
+  <p class="combo-msg"></p>     <!-- Max combo: xN (≥2일 때만) -->
+
+  <!-- 닉네임 입력 (최초 1회, display:none → flex) -->
+  <div id="nickname-section">
+    <p class="nickname-label">🏆 Enter your name for the leaderboard (once):</p>
+    <div class="nickname-row">
+      <input id="nickname-input" type="text" maxlength="20" />
+      <button id="btn-submit-nick">Submit</button>
+    </div>
+  </div>
+
+  <!-- 리더보드 (제출 후, display:none → flex) -->
+  <div id="leaderboard-section">
+    <p class="lb-title">🏆 Leaderboard</p>
+    <p id="lb-rank-msg"></p>   <!-- "You are #N on the leaderboard" -->
+    <div id="lb-list"></div>   <!-- Top 50, max-height: 120px, overflow-y: auto -->
+  </div>
+
+  <div id="review-list"></div>
   <p class="cta-msg">TextBoi fixes this instantly ⚡</p>
   <div class="buttons">
     <a id="btn-textboi" href="https://textboi.ai" target="_blank">Try TextBoi →</a>
@@ -46,50 +66,53 @@ Tip: {randomTip}
 </div>
 ```
 
-- `.best-score` 별도 요소 없음 — `.score-msg`에 `Score: X | Best: Y` 형식으로 합침
-- `#review-list`는 항상 존재, JS가 매 게임마다 innerHTML 덮어씀
-
 ## JS 구현
 
+`_showResult()`는 **async** 함수다. `setState()`에서 await 없이 호출해도 되며, 리더보드 로딩은 비동기로 처리된다.
+
 ```js
-const FAIL_LABELS = {
-  'shot-correct':   '❌ You shot a correct sentence!',
-  'hit-wrong':      '💥 You ran into a wrong sentence!',
-  'missed-wrong':   '💨 You missed a wrong sentence!',
-  'missed-correct': '💨 You missed a correct sentence!',
-};
+// 닉네임 저장 키
+const NICK_KEY = 'grammarSmashNickname';
 
-_showResult() {
-  const best = Math.max(this.score, parseInt(localStorage.getItem('grammarSmashBest') || '0'));
-  localStorage.setItem('grammarSmashBest', best);
-
-  document.querySelector('.fail-label').textContent = FAIL_LABELS[this.failReason];
-  document.querySelector('.fail-sentence').textContent = `"${this.failSentence.sentence}"`;
-  document.querySelector('.fail-explanation').textContent = `→ ${this.failSentence.explanation}`;
-  document.querySelector('.score-msg').textContent = `Score: ${this.score}  |  Best: ${best}`;
-  document.querySelector('.tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
-  this._renderReview();
-  document.getElementById('result').classList.add('visible');
+async _showResult() {
+  // 1. 로컬 best score 갱신
+  // 2. DOM 업데이트 (fail, score, best-msg, combo-msg, review)
+  // 3. result.classList.add('visible')
+  // 4. 닉네임 분기
+  const nickname = localStorage.getItem(NICK_KEY);
+  if (!nickname) {
+    // 닉네임 입력 폼 표시
+    document.getElementById('nickname-section').style.display = 'flex';
+  } else {
+    await this._submitAndShow(nickname); // 자동 제출 + 랭킹 표시
+  }
 }
 
-_renderReview() {
-  const el = document.getElementById('review-list');
-  el.innerHTML = '';
-  this.history.slice(-5).forEach(item => {
-    // ✅/❌ + sentence + explanation 행 동적 생성
-  });
+_onNicknameSubmit() {
+  const name = input.value.trim().slice(0, 20);
+  if (!name) return;
+  localStorage.setItem(NICK_KEY, name);
+  document.getElementById('nickname-section').style.display = 'none';
+  this._submitAndShow(name);
+}
+
+async _submitAndShow(nickname) {
+  if (this.score > 0) await this._submitScore(nickname); // score=0 제출 생략
+  await this._loadLeaderboard(nickname);
 }
 ```
 
 - `this.history`: 스폰 시점마다 push, 최대 8개 보관, restart 시 초기화
 - 리뷰는 최근 5개만 표시, overflow-y: auto (max-height: 140px)
+- restart 시 `nickname-section`, `leaderboard-section` 모두 `display:none` 리셋
 
 ## 입력 처리
 
-- Space 키 → Play Again
-- Enter 키 → Play Again
-- Click `.btn-replay` → Play Again
-- Click `.btn-textboi` → https://textboi.ai 새 탭
+- Space 키 → Play Again (**단, `#nickname-input` 포커스 중일 때는 무시**)
+- Enter 키 → nickname-input 포커스 시 Submit, 그 외 Play Again
+- Click `#btn-submit-nick` → nickname Submit
+- Click `#btn-replay` → Play Again
+- Click `#btn-textboi` → https://textboi.ai 새 탭
 
 ## 스타일 요구사항
 

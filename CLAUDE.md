@@ -5,7 +5,7 @@
 사용자가 **idle 상태일 때만** Toast를 띄워 10~15초짜리 Grammar Shooter 게임을 제안하고,
 "수동 교정의 피로"를 체험시킨 뒤 TextBoi(https://textboi.ai)로 자연스럽게 전환시키는 Chrome Extension.
 
-**퍼널**: Idle → Toast → Click → Game → Fail → Best Score + 콤보 확인 → CTA → Restart
+**퍼널**: Idle → Toast → Click → Game → Fail → (최초 1회 닉네임 입력) → 리더보드 + Best Score + 콤보 → CTA → Restart
 **UX 원칙**: 작업 중 방해 금지, idle 상태에서만 등장, 하루 1회 노출 제한
 
 ---
@@ -57,4 +57,4 @@ INIT → RUNNING → FAIL → RESULT → RESTART(→ RUNNING)
 | `.claude/rules/commands.md` | 커맨드 파일 작성 규칙 |
 | `.claude/skills/game-state-machine.md` | 상태머신 구현 템플릿 |
 | `.claude/skills/idle-system.md` | Idle 감지 + Toast 노출 제한 구현 |
-| `.claude/skills/result-screen.md` | Result Screen 컴포넌트 구현 |
+| `.claude/skills/result-screen.md` | Result Screen + 닉네임 입력 + 리더보드 구현 |
