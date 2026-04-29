@@ -155,6 +155,8 @@ class GrammarBlitz {
     this.sentences = [];
     this.floatingScores = [];
     this.history = [];
+    this.combo = 0;
+    this.maxCombo = 0;
     this.animFrameId = null;
     this.spawnCooldown = 2;
     this.shuffled = this._shuffle([...data]);
@@ -247,13 +249,18 @@ class GrammarBlitz {
   }
 
   _showResult() {
-    const best = Math.max(this.score, parseInt(localStorage.getItem('grammarBlitzBest') || '0'));
+    const prev = parseInt(localStorage.getItem('grammarBlitzBest') || '0');
+    const isNewRecord = this.score > prev;
+    const best = Math.max(this.score, prev);
     localStorage.setItem('grammarBlitzBest', best);
 
     document.querySelector('.fail-label').textContent = FAIL_LABELS[this.failReason];
     document.querySelector('.fail-sentence').textContent = `"${this.failSentence.sentence}"`;
     document.querySelector('.fail-explanation').textContent = `→ ${this.failSentence.explanation}`;
-    document.querySelector('.score-msg').textContent = `Score: ${this.score}  |  Best: ${best}`;
+    document.querySelector('.score-msg').textContent = `Score: ${this.score}`;
+    document.querySelector('.best-msg').textContent = isNewRecord ? '🔥 New Record!' : `Best: ${best}`;
+    document.querySelector('.best-msg').className = isNewRecord ? 'best-msg new-record' : 'best-msg';
+    document.querySelector('.combo-msg').textContent = this.maxCombo >= 2 ? `Max combo: x${this.maxCombo}` : '';
     document.querySelector('.tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
     document.getElementById('hud-best').textContent = `Best: ${best}`;
     this._renderReview();
@@ -286,6 +293,8 @@ class GrammarBlitz {
     this.sentences = [];
     this.floatingScores = [];
     this.history = [];
+    this.combo = 0;
+    this.maxCombo = 0;
     this.spawnCooldown = 2;
     this.shuffled = this._shuffle([...this.data]);
     this.dataIndex = 0;
@@ -360,9 +369,16 @@ class GrammarBlitz {
 
   _addScore(points, x, y) {
     this.score += points;
+    this.combo++;
+    this.maxCombo = Math.max(this.maxCombo, this.combo);
     this.fallSpeed = Math.min(BASE_FALL + this.score * 3, MAX_FALL);
     document.getElementById('hud-score').textContent = `Score: ${this.score}`;
+    document.getElementById('hud-combo').textContent = this.combo >= 2 ? `x${this.combo}` : '';
     this.floatingScores.push(new FloatingScore(x, y, `+${points}`, '#4ade80'));
+    if (this.combo % 5 === 0) {
+      this.fallSpeed = Math.min(this.fallSpeed + 20, MAX_FALL);
+      this.floatingScores.push(new FloatingScore(x, y - 28, `🔥 x${this.combo} COMBO`, '#facc15'));
+    }
   }
 
   _processBulletHits() {

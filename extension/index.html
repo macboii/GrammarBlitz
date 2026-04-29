@@ -37,9 +37,18 @@
     #hud {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       padding: 6px 4px;
       font-size: 13px;
       color: #6b7280;
+    }
+
+    #hud-combo {
+      color: #facc15;
+      font-weight: bold;
+      font-size: 14px;
+      min-width: 40px;
+      text-align: center;
     }
 
     #result {
@@ -124,6 +133,27 @@
     #btn-textboi { background: #f0c040; color: #0f0f1a; }
     #btn-replay  { background: #1f2937; color: #eee; }
 
+    .best-msg {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    .best-msg.new-record {
+      color: #facc15;
+      font-weight: bold;
+      animation: pulse 0.6s ease 2;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.15); }
+    }
+
+    .combo-msg {
+      font-size: 12px;
+      color: #f97316;
+    }
+
     .tip {
       font-size: 11px;
       color: #4b5563;
@@ -175,7 +205,7 @@
 
     <div id="hud">
       <span id="hud-score">Score: 0</span>
-      <span>← → move &nbsp; Space shoot</span>
+      <span id="hud-combo"></span>
       <span id="hud-best">Best: 0</span>
     </div>
 
@@ -186,6 +216,8 @@
         <p class="fail-explanation"></p>
       </div>
       <p class="score-msg"></p>
+      <p class="best-msg"></p>
+      <p class="combo-msg"></p>
       <div id="review-list"></div>
       <p class="cta-msg">TextBoi fixes this instantly ⚡</p>
       <div class="buttons">

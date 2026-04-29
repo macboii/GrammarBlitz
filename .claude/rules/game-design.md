@@ -41,8 +41,30 @@ INIT → RUNNING → FAIL → RESULT → RESTART(→ RUNNING)
 - 속도 상한선 필수 (무한 증가 금지)
 
 ```js
-fallSpeed = Math.min(BASE_FALL + score * 0.1, MAX_FALL)
+fallSpeed = Math.min(BASE_FALL + score * 3, MAX_FALL)
 ```
+
+## 콤보 시스템 (Phase 5)
+
+- 연속 성공(오답 격추 or 정답 접촉)마다 `combo` +1
+- 5콤보마다 fallSpeed 추가 부스트 + `🔥 xN COMBO` FloatingText 표시
+- 게임 종료(FAIL) 시 콤보는 자동 종료 — 별도 리셋 불필요
+- Result Screen에 **최대 콤보** 수치 표시
+
+```js
+combo++;
+if (combo % 5 === 0) {
+  fallSpeed = Math.min(fallSpeed + 20, MAX_FALL);
+  // FloatingText: `🔥 x${combo} COMBO`
+}
+maxCombo = Math.max(maxCombo, combo);
+```
+
+## Best Score / New Record (Phase 5)
+
+- Best Score는 `localStorage.grammarBlitzBest`에 저장 (현재 구현 완료)
+- 신기록 갱신 시 Result Screen에 `🔥 New Record!` 플래시 애니메이션
+- "한 번 더" 유도가 목적 — 로그인/랭킹 없이 로컬 Best Score만으로 충분
 
 ## Canvas 크기
 
