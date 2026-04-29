@@ -1,0 +1,459 @@
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 400;
+const GROUND_Y = 368;
+const PLAYER_SPEED = 5;
+const BULLET_SPEED = 10;
+const BASE_FALL = 80;
+const MAX_FALL = 240;
+
+const GAME_STATE = Object.freeze({
+  INIT:    'INIT',
+  RUNNING: 'RUNNING',
+  FAIL:    'FAIL',
+  RESULT:  'RESULT',
+});
+
+const TIPS = [
+  'Tip: TextBoi fixes this with Ctrl+C+C',
+  'Tip: TextBoi works in any text field',
+  'Tip: TextBoi supports 30+ languages',
+];
+
+const FAIL_LABELS = {
+  'shot-correct':   '❌ You shot a correct sentence!',
+  'hit-wrong':      '💥 You ran into a wrong sentence!',
+  'missed-wrong':   '💨 You missed a wrong sentence!',
+  'missed-correct': '💨 You missed a correct sentence!',
+};
+
+class Player {
+  constructor() {
+    this.width = 44;
+    this.height = 28;
+    this.x = CANVAS_WIDTH / 2 - 22;
+    this.y = GROUND_Y - this.height;
+    this.dir = 0;
+  }
+
+  update(dt) {
+    this.x = Math.max(0, Math.min(
+      CANVAS_WIDTH - this.width,
+      this.x + this.dir * PLAYER_SPEED * dt * 60
+    ));
+  }
+
+  draw(ctx) {
+    const cx = this.x + this.width / 2;
+    ctx.fillStyle = '#4ade80';
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillStyle = '#86efac';
+    ctx.fillRect(cx - 4, this.y - 10, 8, 10);
+    ctx.fillStyle = '#f97316';
+    ctx.fillRect(this.x + 6, this.y + this.height, 8, 5);
+    ctx.fillRect(this.x + this.width - 14, this.y + this.height, 8, 5);
+  }
+
+  get centerX() { return this.x + this.width / 2; }
+}
+
+class Bullet {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.active = true;
+  }
+
+  update(dt) {
+    this.y -= BULLET_SPEED * dt * 60;
+    if (this.y < -12) this.active = false;
+  }
+
+  draw(ctx) {
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(this.x - 2, this.y, 4, 12);
+  }
+}
+
+class FallingSentence {
+  constructor(item, x, fallSpeed) {
+    this.item = item;
+    this.isCorrect = item.isCorrect;
+    this.width = Math.min(item.sentence.length * 7.2 + 24, CANVAS_WIDTH - 40);
+    this.height = 34;
+    this.x = Math.max(10, Math.min(x, CANVAS_WIDTH - this.width - 10));
+    this.y = -this.height;
+    this.fallSpeed = fallSpeed;
+    this.passed = false;
+    this.hit = false;
+  }
+
+  update(dt) { this.y += this.fallSpeed * dt; }
+
+  _truncate(ctx, text, maxW) {
+    if (ctx.measureText(text).width <= maxW) return text;
+    while (ctx.measureText(text + '…').width > maxW && text.length > 0) text = text.slice(0, -1);
+    return text + '…';
+  }
+
+  draw(ctx) {
+    ctx.fillStyle = this.isCorrect ? '#15803d' : '#b91c1c';
+    ctx.beginPath();
+    ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(this.isCorrect ? 'CORRECT' : 'WRONG', this.x + this.width - 6, this.y + 11);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(this._truncate(ctx, this.item.sentence, this.width - 16), this.x + 8, this.y + 26);
+  }
+
+  isOffScreen() { return this.y > CANVAS_HEIGHT; }
+
+  collidesBullet(b) {
+    return b.x >= this.x && b.x <= this.x + this.width &&
+           b.y >= this.y && b.y <= this.y + this.height;
+  }
+}
+
+class FloatingScore {
+  constructor(x, y, text, color) {
+    this.x = x;
+    this.y = y;
+    this.text = text;
+    this.color = color;
+    this.life = 1.0;
+  }
+
+  update(dt) { this.y -= 60 * dt; this.life -= dt * 1.8; }
+  isDead() { return this.life <= 0; }
+
+  draw(ctx) {
+    ctx.globalAlpha = Math.max(0, this.life);
+    ctx.fillStyle = this.color;
+    ctx.font = 'bold 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(this.text, this.x, this.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
+class GrammarBlitz {
+  constructor(canvas, data) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.data = data;
+    this.state = null;
+    this.score = 0;
+    this.fallSpeed = BASE_FALL;
+    this.player = new Player();
+    this.bullets = [];
+    this.sentences = [];
+    this.floatingScores = [];
+    this.history = [];
+    this.animFrameId = null;
+    this.spawnCooldown = 2;
+    this.shuffled = this._shuffle([...data]);
+    this.dataIndex = 0;
+    this.failSentence = null;
+    this.failReason = null;
+
+    this._bindInput();
+    this.setState(GAME_STATE.INIT);
+  }
+
+  setState(newState) {
+    this.state = newState;
+    if (newState === GAME_STATE.INIT)    this._drawIntro();
+    if (newState === GAME_STATE.RUNNING) this._startLoop();
+    if (newState === GAME_STATE.FAIL)    this._onFail();
+    if (newState === GAME_STATE.RESULT)  this._showResult();
+  }
+
+  _drawIntro() {
+    const ctx = this.ctx;
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 28px monospace';
+    ctx.fillText('GrammarBlitz', CANVAS_WIDTH / 2, 60);
+
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '12px monospace';
+    ctx.fillText('Shoot wrong sentences. Dodge the correct ones.', CANVAS_WIDTH / 2, 90);
+
+    this._drawIntroTable(ctx);
+    this._drawIntroControls(ctx);
+
+    ctx.fillStyle = '#facc15';
+    ctx.font = 'bold 13px monospace';
+    ctx.fillText('Press Space or Click to Start', CANVAS_WIDTH / 2, 370);
+  }
+
+  _drawIntroTable(ctx) {
+    const rows = [
+      ['',              '❌ WRONG (red)',  '✅ CORRECT (green)'],
+      ['Shoot',         '+2 pts',          'FAIL'],
+      ['Touch',         'FAIL',            '+3 pts'],
+      ['Miss (floor)',  'FAIL',            'FAIL'],
+    ];
+    const colX = [110, 280, 460];
+    const startY = 140;
+    const rowH = 32;
+
+    ctx.font = 'bold 11px monospace';
+    rows.forEach((row, ri) => {
+      const y = startY + ri * rowH;
+      row.forEach((cell, ci) => {
+        const isHeader = ri === 0 || ci === 0;
+        ctx.fillStyle = isHeader ? '#d1d5db' : (cell === 'FAIL' ? '#f87171' : cell.includes('+') ? '#4ade80' : '#9ca3af');
+        ctx.font = isHeader ? 'bold 11px monospace' : '11px monospace';
+        ctx.textAlign = ci === 0 ? 'right' : 'center';
+        ctx.fillText(cell, colX[ci], y);
+      });
+    });
+  }
+
+  _drawIntroControls(ctx) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '11px monospace';
+    ctx.fillText('← → keys or mouse click to move   ·   Space or click to shoot', CANVAS_WIDTH / 2, 310);
+  }
+
+  _startLoop() {
+    let last = performance.now();
+    const loop = (now) => {
+      if (this.state !== GAME_STATE.RUNNING) return;
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      this.update(dt);
+      this.draw(this.ctx);
+      this.animFrameId = requestAnimationFrame(loop);
+    };
+    this.animFrameId = requestAnimationFrame(loop);
+  }
+
+  _onFail() {
+    cancelAnimationFrame(this.animFrameId);
+    this.draw(this.ctx);
+    setTimeout(() => this.setState(GAME_STATE.RESULT), 300);
+  }
+
+  _showResult() {
+    const best = Math.max(this.score, parseInt(localStorage.getItem('grammarBlitzBest') || '0'));
+    localStorage.setItem('grammarBlitzBest', best);
+
+    document.querySelector('.fail-label').textContent = FAIL_LABELS[this.failReason];
+    document.querySelector('.fail-sentence').textContent = `"${this.failSentence.sentence}"`;
+    document.querySelector('.fail-explanation').textContent = `→ ${this.failSentence.explanation}`;
+    document.querySelector('.score-msg').textContent = `Score: ${this.score}  |  Best: ${best}`;
+    document.querySelector('.tip').textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+    document.getElementById('hud-best').textContent = `Best: ${best}`;
+    this._renderReview();
+    document.getElementById('result').classList.add('visible');
+  }
+
+  _renderReview() {
+    const el = document.getElementById('review-list');
+    el.innerHTML = '';
+    const seen = this.history.slice(-5);
+    seen.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'review-row';
+      row.innerHTML = `
+        <span class="review-icon">${item.isCorrect ? '✅' : '❌'}</span>
+        <div class="review-body">
+          <p class="review-sentence">${item.sentence}</p>
+          <p class="review-exp">${item.explanation}</p>
+        </div>`;
+      el.appendChild(row);
+    });
+  }
+
+  _restart() {
+    document.getElementById('result').classList.remove('visible');
+    this.score = 0;
+    this.fallSpeed = BASE_FALL;
+    this.player = new Player();
+    this.bullets = [];
+    this.sentences = [];
+    this.floatingScores = [];
+    this.history = [];
+    this.spawnCooldown = 2;
+    this.shuffled = this._shuffle([...this.data]);
+    this.dataIndex = 0;
+    this.failSentence = null;
+    this.failReason = null;
+    document.getElementById('hud-score').textContent = 'Score: 0';
+    this.setState(GAME_STATE.RUNNING);
+  }
+
+  _bindInput() {
+    this._onKey = (e) => this._handleKey(e);
+    this._onKeyUp = (e) => this._handleKeyUp(e);
+    this._onClick = (e) => this._handleClick(e);
+    document.addEventListener('keydown', this._onKey);
+    document.addEventListener('keyup', this._onKeyUp);
+    this.canvas.addEventListener('click', this._onClick);
+    document.getElementById('btn-replay').addEventListener('click', () => this._restart());
+  }
+
+  _handleKey(e) {
+    if (e.code === 'ArrowLeft')  this.player.dir = -1;
+    if (e.code === 'ArrowRight') this.player.dir = 1;
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    if (this.state === GAME_STATE.INIT)    this.setState(GAME_STATE.RUNNING);
+    if (this.state === GAME_STATE.RUNNING) this._shoot();
+    if (this.state === GAME_STATE.RESULT)  this._restart();
+  }
+
+  _handleKeyUp(e) {
+    if (e.code === 'ArrowLeft'  && this.player.dir === -1) this.player.dir = 0;
+    if (e.code === 'ArrowRight' && this.player.dir ===  1) this.player.dir = 0;
+  }
+
+  _handleClick(e) {
+    if (this.state === GAME_STATE.INIT) { this.setState(GAME_STATE.RUNNING); return; }
+    if (this.state !== GAME_STATE.RUNNING) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const clickX = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width);
+    this.player.x = Math.max(0, Math.min(CANVAS_WIDTH - this.player.width, clickX - this.player.width / 2));
+    this._shoot();
+  }
+
+  _shoot() {
+    this.bullets.push(new Bullet(this.player.centerX, this.player.y - 10));
+  }
+
+  _nextItem() {
+    const item = this.shuffled[this.dataIndex % this.shuffled.length];
+    this.dataIndex++;
+    if (this.dataIndex % this.shuffled.length === 0) this.shuffled = this._shuffle([...this.data]);
+    return item;
+  }
+
+  _shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  _spawnIfReady(dt) {
+    this.spawnCooldown -= dt;
+    if (this.spawnCooldown > 0) return;
+    const item = this._nextItem();
+    const x = Math.random() * (CANVAS_WIDTH - 200) + 10;
+    this.sentences.push(new FallingSentence(item, x, this.fallSpeed));
+    if (this.history.length < 8) this.history.push(item);
+    this.spawnCooldown = Math.max(2.5 - this.score * 0.05, 1.2);
+  }
+
+  _addScore(points, x, y) {
+    this.score += points;
+    this.fallSpeed = Math.min(BASE_FALL + this.score * 3, MAX_FALL);
+    document.getElementById('hud-score').textContent = `Score: ${this.score}`;
+    this.floatingScores.push(new FloatingScore(x, y, `+${points}`, '#4ade80'));
+  }
+
+  _processBulletHits() {
+    for (const b of this.bullets) {
+      if (!b.active) continue;
+      for (const s of this.sentences) {
+        if (s.hit || !s.collidesBullet(b)) continue;
+        b.active = false;
+        s.hit = true;
+        if (s.isCorrect) {
+          this.failSentence = s.item;
+          this.failReason = 'shot-correct';
+          this.setState(GAME_STATE.FAIL);
+          return true;
+        }
+        this._addScore(2, s.x + s.width / 2, s.y);
+      }
+    }
+    return false;
+  }
+
+  _playerOverlaps(s) {
+    return (
+      this.player.x < s.x + s.width  &&
+      this.player.x + this.player.width > s.x &&
+      this.player.y < s.y + s.height &&
+      this.player.y + this.player.height > s.y
+    );
+  }
+
+  _checkPlayerCollisions() {
+    for (const s of this.sentences) {
+      if (s.hit || s.passed || !this._playerOverlaps(s)) continue;
+      s.hit = true;
+      if (s.isCorrect) {
+        this._addScore(3, s.x + s.width / 2, s.y);
+      } else {
+        this.failSentence = s.item;
+        this.failReason = 'hit-wrong';
+        this.setState(GAME_STATE.FAIL);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  _processMissed() {
+    for (const s of this.sentences) {
+      if (s.hit || s.passed || !s.isOffScreen()) continue;
+      s.passed = true;
+      this.failSentence = s.item;
+      this.failReason = s.isCorrect ? 'missed-correct' : 'missed-wrong';
+      this.setState(GAME_STATE.FAIL);
+      return true;
+    }
+    return false;
+  }
+
+  update(dt) {
+    this.player.update(dt);
+    this._spawnIfReady(dt);
+    this.sentences.forEach(s => s.update(dt));
+    this.bullets.forEach(b => b.update(dt));
+    if (this._processBulletHits()) return;
+    if (this._checkPlayerCollisions()) return;
+    if (this._processMissed()) return;
+    this.bullets = this.bullets.filter(b => b.active);
+    this.sentences = this.sentences.filter(s => !s.hit && !s.isOffScreen());
+    this.floatingScores.forEach(f => f.update(dt));
+    this.floatingScores = this.floatingScores.filter(f => !f.isDead());
+  }
+
+  draw(ctx) {
+    ctx.fillStyle = '#0f0f1a';
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y);
+    ctx.lineTo(CANVAS_WIDTH, GROUND_Y);
+    ctx.stroke();
+    this.sentences.forEach(s => s.draw(ctx));
+    this.bullets.forEach(b => b.draw(ctx));
+    this.player.draw(ctx);
+    this.floatingScores.forEach(f => f.draw(ctx));
+  }
+
+  destroy() {
+    cancelAnimationFrame(this.animFrameId);
+    document.removeEventListener('keydown', this._onKey);
+    document.removeEventListener('keyup', this._onKeyUp);
+    this.canvas.removeEventListener('click', this._onClick);
+  }
+}

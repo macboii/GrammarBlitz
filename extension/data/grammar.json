@@ -1,0 +1,246 @@
+[
+  {
+    "sentence": "She goes to the market every day",
+    "isCorrect": true,
+    "explanation": "'Goes' is correct — third-person singular (she/he/it) needs -s in present tense."
+  },
+  {
+    "sentence": "He went to school yesterday",
+    "isCorrect": true,
+    "explanation": "'Went' is correct — past tense of 'go'."
+  },
+  {
+    "sentence": "They were playing in the park",
+    "isCorrect": true,
+    "explanation": "'Were' is correct — past tense of 'be' with they/we/you."
+  },
+  {
+    "sentence": "I want to buy an umbrella",
+    "isCorrect": true,
+    "explanation": "'An' is correct — use 'an' before vowel sounds. 'Umbrella' starts with /ʌ/."
+  },
+  {
+    "sentence": "She is married to a doctor",
+    "isCorrect": true,
+    "explanation": "'Married to' is correct — not 'married with'."
+  },
+  {
+    "sentence": "I have two children",
+    "isCorrect": true,
+    "explanation": "'Children' is correct — irregular plural of 'child'."
+  },
+  {
+    "sentence": "He is good at math",
+    "isCorrect": true,
+    "explanation": "'Good at' is correct — use 'at' for skills and subjects."
+  },
+  {
+    "sentence": "We bought the tickets yesterday",
+    "isCorrect": true,
+    "explanation": "'Bought' is correct — irregular past tense of 'buy'."
+  },
+  {
+    "sentence": "She found an answer on the internet",
+    "isCorrect": true,
+    "explanation": "'An' is correct — 'answer' starts with a vowel sound."
+  },
+  {
+    "sentence": "He gave me a useful tip",
+    "isCorrect": true,
+    "explanation": "'A' is correct — 'useful' starts with /j/, a consonant sound."
+  },
+  {
+    "sentence": "I saw a bear in the woods",
+    "isCorrect": true,
+    "explanation": "'A' is correct — 'bear' starts with a consonant sound /b/."
+  },
+  {
+    "sentence": "We saw two wolves in the forest",
+    "isCorrect": true,
+    "explanation": "'Wolves' is correct — irregular plural of 'wolf'."
+  },
+  {
+    "sentence": "The information is incorrect",
+    "isCorrect": true,
+    "explanation": "'Information' is correct — it is uncountable and has no plural form."
+  },
+  {
+    "sentence": "He gave me good advice",
+    "isCorrect": true,
+    "explanation": "'Advice' is correct — it is uncountable and has no plural form."
+  },
+  {
+    "sentence": "She is the oldest sister",
+    "isCorrect": true,
+    "explanation": "'The oldest' is correct — superlative adjectives always need 'the'."
+  },
+
+  {
+    "sentence": "She go to the market every day",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "goes",
+    "explanation": "'Go' → 'goes': third-person singular (she/he/it) requires -s in present tense."
+  },
+  {
+    "sentence": "He don't like spicy food",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "doesn't",
+    "explanation": "'Don't' → 'doesn't': use 'doesn't' with he/she/it, not 'don't'."
+  },
+  {
+    "sentence": "They was playing in the park",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "were",
+    "explanation": "'Was' → 'were': use 'were' with they/we/you in past tense."
+  },
+  {
+    "sentence": "The team are winning the match",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "is",
+    "explanation": "'Are' → 'is': collective nouns like 'team' take a singular verb in American English."
+  },
+  {
+    "sentence": "My friend have a new car",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "has",
+    "explanation": "'Have' → 'has': third-person singular (he/she/it) uses 'has', not 'have'."
+  },
+  {
+    "sentence": "I go to school yesterday",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "went",
+    "explanation": "'Go' → 'went': 'yesterday' signals past tense. 'Go' is irregular — past is 'went'."
+  },
+  {
+    "sentence": "She eats pizza last night",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "ate",
+    "explanation": "'Eats' → 'ate': 'last night' requires past tense. 'Eat' is irregular — past is 'ate'."
+  },
+  {
+    "sentence": "We buyed the tickets yesterday",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "bought",
+    "explanation": "'Buyed' → 'bought': 'buy' is irregular. Never add -ed. Past tense is 'bought'."
+  },
+  {
+    "sentence": "He finishes the project yesterday",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "finished",
+    "explanation": "'Finishes' → 'finished': 'yesterday' requires past tense."
+  },
+  {
+    "sentence": "They leaved before we arrived",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "left",
+    "explanation": "'Leaved' → 'left': 'leave' is irregular. Past tense is 'left', not 'leaved'."
+  },
+  {
+    "sentence": "I want to buy a umbrella",
+    "isCorrect": false,
+    "wrongIndex": 5,
+    "correct": "an",
+    "explanation": "'A' → 'an': use 'an' before vowel sounds. 'Umbrella' starts with /ʌ/."
+  },
+  {
+    "sentence": "She found a answer on the internet",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "an",
+    "explanation": "'A' → 'an': 'answer' starts with a vowel sound /æ/. Use 'an'."
+  },
+  {
+    "sentence": "He gave me an useful tip",
+    "isCorrect": false,
+    "wrongIndex": 3,
+    "correct": "a",
+    "explanation": "'An' → 'a': 'useful' sounds like /juːzfəl/ — starts with /j/, a consonant sound."
+  },
+  {
+    "sentence": "She is married with a doctor",
+    "isCorrect": false,
+    "wrongIndex": 3,
+    "correct": "to",
+    "explanation": "'With' → 'to': the correct collocation is 'married to', not 'married with'."
+  },
+  {
+    "sentence": "He is good in math",
+    "isCorrect": false,
+    "wrongIndex": 3,
+    "correct": "at",
+    "explanation": "'In' → 'at': say 'good at' for skills and subjects, not 'good in'."
+  },
+  {
+    "sentence": "She depends of her parents",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "on",
+    "explanation": "'Of' → 'on': the correct phrase is 'depend on', not 'depend of'."
+  },
+  {
+    "sentence": "I have two childs",
+    "isCorrect": false,
+    "wrongIndex": 3,
+    "correct": "children",
+    "explanation": "'Childs' → 'children': 'child' has an irregular plural. Never add -s."
+  },
+  {
+    "sentence": "She bought three deers at the farm",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "deer",
+    "explanation": "'Deers' → 'deer': 'deer' is unchanged in plural. Same form for one or many."
+  },
+  {
+    "sentence": "The informations are incorrect",
+    "isCorrect": false,
+    "wrongIndex": 1,
+    "correct": "information",
+    "explanation": "'Informations' → 'information': uncountable noun — no plural form ever."
+  },
+  {
+    "sentence": "He gave me many advices",
+    "isCorrect": false,
+    "wrongIndex": 3,
+    "correct": "advice",
+    "explanation": "'Advices' → 'advice': uncountable noun — say 'a piece of advice', not 'advices'."
+  },
+  {
+    "sentence": "We saw two wolfs in the forest",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "wolves",
+    "explanation": "'Wolfs' → 'wolves': words ending in -f often change to -ves in plural."
+  },
+  {
+    "sentence": "I arrived to the airport late",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "at",
+    "explanation": "'To' → 'at': use 'arrive at' for specific places, not 'arrive to'."
+  },
+  {
+    "sentence": "We talked about the problem on an hour",
+    "isCorrect": false,
+    "wrongIndex": 6,
+    "correct": "for",
+    "explanation": "'On' → 'for': use 'for' to express a duration of time."
+  },
+  {
+    "sentence": "I saw an bear in the woods",
+    "isCorrect": false,
+    "wrongIndex": 2,
+    "correct": "a",
+    "explanation": "'An' → 'a': 'bear' starts with a consonant sound /b/. Use 'a'."
+  }
+]

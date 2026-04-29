@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GrammarBlitz</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: #0f0f1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', monospace;
+      color: #eee;
+    }
+
+    #game-wrapper {
+      position: relative;
+      width: 600px;
+      transform: scale(1.8);
+      transform-origin: center center;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 8px;
+      border: 2px solid #1f2937;
+    }
+
+    #hud {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 4px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    #result {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 5, 15, 0.94);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 24px;
+    }
+
+    #result.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .fail-reason {
+      width: 100%;
+      background: rgba(220, 38, 38, 0.15);
+      border: 1px solid rgba(220, 38, 38, 0.4);
+      border-radius: 6px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .fail-label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #fca5a5;
+    }
+
+    .fail-sentence {
+      font-size: 13px;
+      color: #fff;
+      font-style: italic;
+    }
+
+    .fail-explanation {
+      font-size: 12px;
+      color: #d1d5db;
+      line-height: 1.5;
+    }
+
+    .score-msg {
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .cta-msg {
+      font-size: 14px;
+      color: #f0c040;
+    }
+
+    .best-score {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .buttons a, .buttons button {
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    #btn-textboi { background: #f0c040; color: #0f0f1a; }
+    #btn-replay  { background: #1f2937; color: #eee; }
+
+    .tip {
+      font-size: 11px;
+      color: #4b5563;
+      margin-top: 2px;
+    }
+
+    #review-list {
+      width: 100%;
+      max-height: 140px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    #review-list::-webkit-scrollbar { width: 4px; }
+    #review-list::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+
+    .review-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      background: rgba(255,255,255,0.04);
+      border-radius: 5px;
+      padding: 7px 10px;
+    }
+
+    .review-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+
+    .review-body { display: flex; flex-direction: column; gap: 2px; }
+
+    .review-sentence {
+      font-size: 12px;
+      color: #e5e7eb;
+      font-style: italic;
+    }
+
+    .review-exp {
+      font-size: 11px;
+      color: #9ca3af;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-wrapper">
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <div id="hud">
+      <span id="hud-score">Score: 0</span>
+      <span>← → move &nbsp; Space shoot</span>
+      <span id="hud-best">Best: 0</span>
+    </div>
+
+    <div id="result">
+      <div class="fail-reason">
+        <p class="fail-label"></p>
+        <p class="fail-sentence"></p>
+        <p class="fail-explanation"></p>
+      </div>
+      <p class="score-msg"></p>
+      <div id="review-list"></div>
+      <p class="cta-msg">TextBoi fixes this instantly ⚡</p>
+      <div class="buttons">
+        <a id="btn-textboi" href="https://textboi.ai" target="_blank">Try TextBoi →</a>
+        <button id="btn-replay">Play Again</button>
+      </div>
+      <p class="tip"></p>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
