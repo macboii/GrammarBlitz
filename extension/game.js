@@ -123,6 +123,49 @@ class FallingSentence {
   }
 }
 
+class StarField {
+  constructor() {
+    this.stars = [
+      ...StarField._gen(70, 0.7, 22,  0.22, '#c7d2fe'),
+      ...StarField._gen(40, 1.3, 55,  0.50, '#e0e7ff'),
+      ...StarField._gen(18, 2.1, 115, 0.85, '#ffffff'),
+    ];
+  }
+
+  static _gen(n, size, speed, alpha, color) {
+    return Array.from({ length: n }, () => ({
+      x: Math.random() * CANVAS_WIDTH,
+      y: Math.random() * CANVAS_HEIGHT,
+      size, speed, alpha, color,
+    }));
+  }
+
+  update(dt) {
+    for (const s of this.stars) {
+      s.y += s.speed * dt;
+      if (s.y > CANVAS_HEIGHT + s.size) {
+        s.y = -s.size;
+        s.x = Math.random() * CANVAS_WIDTH;
+      }
+    }
+  }
+
+  draw(ctx) {
+    for (const s of this.stars) {
+      ctx.globalAlpha = s.alpha;
+      ctx.fillStyle = s.color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+      ctx.fill();
+      if (s.speed > 80) {
+        ctx.globalAlpha = s.alpha * 0.25;
+        ctx.fillRect(s.x - s.size * 0.3, s.y - s.speed * 0.06, s.size * 0.6, s.speed * 0.06);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
 class FloatingScore {
   constructor(x, y, text, color) {
     this.x = x;
@@ -167,6 +210,8 @@ class GrammarSmash {
     this.failSentence = null;
     this.failReason = null;
 
+    this.starField = new StarField();
+
     this._bindInput();
     this.setState(GAME_STATE.INIT);
   }
@@ -181,8 +226,9 @@ class GrammarSmash {
 
   _drawIntro() {
     const ctx = this.ctx;
-    ctx.fillStyle = '#0f0f1a';
+    ctx.fillStyle = '#0a0a18';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.starField.draw(ctx);
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#facc15';
@@ -521,6 +567,7 @@ class GrammarSmash {
   }
 
   update(dt) {
+    this.starField.update(dt);
     this.player.update(dt);
     this._spawnIfReady(dt);
     this.sentences.forEach(s => s.update(dt));
@@ -535,8 +582,9 @@ class GrammarSmash {
   }
 
   draw(ctx) {
-    ctx.fillStyle = '#0f0f1a';
+    ctx.fillStyle = '#0a0a18';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.starField.draw(ctx);
     ctx.strokeStyle = '#374151';
     ctx.lineWidth = 2;
     ctx.beginPath();
