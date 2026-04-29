@@ -442,7 +442,7 @@ class GrammarSmash {
     list.innerHTML = '';
     let myRank = -1;
     rows.forEach((row, i) => {
-      const isMe = row.nickname === nickname && myRank === -1 && row.score === this.score;
+      const isMe = row.nickname === nickname && myRank === -1;
       if (isMe) myRank = i + 1;
       const div = document.createElement('div');
       div.className = 'lb-row' + (isMe ? ' lb-me' : '');
