@@ -40,6 +40,16 @@
 - **게임 페이지 (`index.html`, `game.js`)** 에서는 `localStorage` 사용 가능
 - `chrome.storage.local` 사용 시 `"storage"` permission 필수 (manifest에 포함됨)
 
+## Idle · Toast 정책
+
+- **Idle 임계값**: 20초 (`IDLE_MS = 20_000`) — mousemove/keydown/scroll/click 중 하나라도 발생 시 리셋
+- **Toast 위치**: 우측 상단 (`top: 24px; right: 24px`) — 위에서 아래로 slide-in
+- **Toast 자동 닫힘**: 12초 후 제거. hover 중에는 타이머 일시정지, mouseleave 후 5초 뒤 닫힘
+- **노출 제한**: 탭당 1회 (`shownThisPage` in-memory 플래그) + 하루 총 5회 (`MAX_DAILY = 5`), 24시간 슬라이딩 윈도우
+- **Extension context 방어**: `chrome.runtime?.id` 체크 후 진입, 모든 `chrome.*` 호출 try-catch
+  - 익스텐션 재로드 후 기존 탭에서 context invalidated 오류 방지
+- **`chrome://` 페이지 주의**: content script는 `chrome://` 및 New Tab(`chrome://newtab`)에 주입 안 됨 — 일반 웹페이지에서만 동작
+
 ## 성능 요구사항
 
 | 항목 | 목표 |
@@ -60,7 +70,7 @@
 ## 스토리지
 
 - `localStorage` (게임 페이지): bestScore, nickname
-- `chrome.storage.local` (content script): 노출 타임스탬프 배열 (`grammarsmash_shown_times`) — 하루 3회 제한
+- `chrome.storage.local` (content script): 노출 타임스탬프 배열 (`grammarsmash_shown_times`) — 하루 5회 제한
 - Supabase (Phase 6+): 글로벌 리더보드 — textBoi-us 프로젝트 `azgplnfczforimmtpznx`
   - 테이블: `grammarsmash_leaderboard` (nickname UNIQUE, score, created_at)
   - SDK 없이 `fetch()` REST API 직접 호출 (CDN 로드 금지 정책 유지)

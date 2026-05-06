@@ -1,6 +1,7 @@
 const STORAGE_KEY = 'grammarsmash_shown_times';
 const ONE_DAY_MS = 86_400_000;
 const MAX_DAILY = 5;
+let shownThisPage = false;
 
 async function canShow() {
   try {
@@ -81,19 +82,21 @@ function createToastEl() {
 async function triggerToast() {
   // Guard: if extension context already invalidated, bail out silently
   if (!chrome.runtime?.id) return;
+  if (shownThisPage) return;
   if (!(await canShow())) return;
+  shownThisPage = true;
   await markShown();
 
   const toast = createToastEl();
   document.body.appendChild(toast);
 
   const shadow = toast.shadowRoot;
-  let autoClose = setTimeout(() => toast.remove(), 5000);
+  let autoClose = setTimeout(() => toast.remove(), 12000);
 
   const wrap = shadow.querySelector('.wrap');
   wrap.addEventListener('mouseenter', () => clearTimeout(autoClose));
   wrap.addEventListener('mouseleave', () => {
-    autoClose = setTimeout(() => toast.remove(), 2000);
+    autoClose = setTimeout(() => toast.remove(), 5000);
   });
 
   shadow.querySelector('.play').addEventListener('click', () => {
