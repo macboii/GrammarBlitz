@@ -9,7 +9,6 @@ const BULLET_SPEED = 10;
 const BASE_FALL = 80;
 const MAX_FALL = 240;
 
-// 각 레벨에 필요한 누적 점수
 const LEVEL_THRESHOLDS = [0, 5, 12, 21, 32, 45, 60, 77, 96, 117, 140];
 
 const GAME_STATE = Object.freeze({
@@ -81,7 +80,7 @@ class Bullet {
 }
 
 class FallingSentence {
-  constructor(item, x, fallSpeed) {
+  constructor(item, x, fallSpeed, isBonus = false) {
     this.item = item;
     this.isCorrect = item.isCorrect;
     this.width = Math.min(item.sentence.length * 7.2 + 24, CANVAS_WIDTH - 40);
@@ -91,15 +90,17 @@ class FallingSentence {
     this.fallSpeed = fallSpeed;
     this.passed = false;
     this.hit = false;
-    this.flashTimer = 0;
-    this.flashDuration = 1.2;
+    // Bonus sentences flash throughout their entire fall and move much slower
+    this.isBonus = isBonus;
+    this.aliveTime = 0;
   }
 
-  get isFlashing() { return this.flashTimer < this.flashDuration; }
+  // isFlashing is true only for bonus sentences (entire lifetime)
+  get isFlashing() { return this.isBonus; }
 
   update(dt) {
-    this.flashTimer += dt;
-    const speed = this.isFlashing ? this.fallSpeed * 0.5 : this.fallSpeed;
+    this.aliveTime += dt;
+    const speed = this.isBonus ? this.fallSpeed * 0.25 : this.fallSpeed;
     this.y += speed * dt;
   }
 
@@ -111,8 +112,9 @@ class FallingSentence {
 
   draw(ctx) {
     let bgColor;
-    if (this.isFlashing) {
-      bgColor = Math.floor(this.flashTimer * 7) % 2 === 0 ? '#15803d' : '#b91c1c';
+    if (this.isBonus) {
+      // Flash between green and red throughout entire fall at 7 Hz
+      bgColor = Math.floor(this.aliveTime * 7) % 2 === 0 ? '#15803d' : '#b91c1c';
     } else {
       bgColor = this.isCorrect ? '#15803d' : '#b91c1c';
     }
@@ -121,13 +123,13 @@ class FallingSentence {
     ctx.roundRect(this.x, this.y, this.width, this.height, 5);
     ctx.fill();
 
-    ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.font = 'bold 9px monospace';
     ctx.textAlign = 'right';
-    if (this.isFlashing) {
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    if (this.isBonus) {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
       ctx.fillText('⚡ x2', this.x + this.width - 6, this.y + 11);
     } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
       ctx.fillText(this.isCorrect ? 'CORRECT' : 'WRONG', this.x + this.width - 6, this.y + 11);
     }
 
@@ -142,6 +144,62 @@ class FallingSentence {
   collidesBullet(b) {
     return b.x >= this.x && b.x <= this.x + this.width &&
            b.y >= this.y && b.y <= this.y + this.height;
+  }
+}
+
+// Shown when a wrong sentence is corrected — flies upward and fades out
+class CorrectionBubble {
+  constructor(x, y, width, correctedText) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = 34;
+    this.text = correctedText;
+    this.vy = -130; // initial upward velocity
+    this.life = 1.8;
+    this.maxLife = 1.8;
+  }
+
+  update(dt) {
+    this.y += this.vy * dt;
+    this.vy += 90 * dt; // decelerate (gravity pulls back)
+    this.life -= dt;
+  }
+
+  isDead() { return this.life <= 0; }
+
+  _truncate(ctx, text, maxW) {
+    if (ctx.measureText(text).width <= maxW) return text;
+    while (ctx.measureText(text + '…').width > maxW && text.length > 0) text = text.slice(0, -1);
+    return text + '…';
+  }
+
+  draw(ctx) {
+    const alpha = Math.max(0, this.life / this.maxLife);
+    ctx.globalAlpha = alpha;
+
+    ctx.fillStyle = '#166534';
+    ctx.beginPath();
+    ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+    ctx.fill();
+
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(this.x, this.y, this.width, this.height, 5);
+    ctx.stroke();
+
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('✓ FIXED', this.x + this.width - 6, this.y + 11);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(this._truncate(ctx, this.text, this.width - 16), this.x + 8, this.y + 26);
+
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -283,6 +341,7 @@ class GrammarSmash {
     this.bullets = [];
     this.sentences = [];
     this.floatingScores = [];
+    this.correctionBubbles = [];
     this.history = [];
     this.combo = 0;
     this.maxCombo = 0;
@@ -335,20 +394,21 @@ class GrammarSmash {
   _drawIntroTable(ctx) {
     const rows = [
       ['',              '❌ WRONG (red)',  '✅ CORRECT (green)'],
-      ['Shoot',         '+2 pts',          'FAIL'],
+      ['Shoot',         '+2 pts → FIXED', 'FAIL'],
       ['Touch',         'FAIL',            '+3 pts'],
+      ['⚡ Touch',      'FIXED (no FAIL)', '+6 pts'],
       ['Miss (floor)',  'FAIL',            'FAIL'],
     ];
     const colX = [110, 280, 460];
-    const startY = 140;
-    const rowH = 32;
+    const startY = 135;
+    const rowH = 30;
 
     ctx.font = 'bold 11px monospace';
     rows.forEach((row, ri) => {
       const y = startY + ri * rowH;
       row.forEach((cell, ci) => {
         const isHeader = ri === 0 || ci === 0;
-        ctx.fillStyle = isHeader ? '#d1d5db' : (cell === 'FAIL' ? '#f87171' : cell.includes('+') ? '#4ade80' : '#9ca3af');
+        ctx.fillStyle = isHeader ? '#d1d5db' : (cell === 'FAIL' ? '#f87171' : cell.includes('+') ? '#4ade80' : cell.includes('FIXED') ? '#22d3ee' : '#9ca3af');
         ctx.font = isHeader ? 'bold 11px monospace' : '11px monospace';
         ctx.textAlign = ci === 0 ? 'right' : 'center';
         ctx.fillText(cell, colX[ci], y);
@@ -507,6 +567,7 @@ class GrammarSmash {
     this.bullets = [];
     this.sentences = [];
     this.floatingScores = [];
+    this.correctionBubbles = [];
     this.history = [];
     this.combo = 0;
     this.maxCombo = 0;
@@ -582,9 +643,26 @@ class GrammarSmash {
     if (this.spawnCooldown > 0) return;
     const item = this._nextItem();
     const x = Math.random() * (CANVAS_WIDTH - 200) + 10;
-    this.sentences.push(new FallingSentence(item, x, this.fallSpeed));
+    // ~25% chance to spawn a bonus flash sentence (slower, flashes entire fall)
+    const isBonus = Math.random() < 0.25;
+    this.sentences.push(new FallingSentence(item, x, this.fallSpeed, isBonus));
     if (this.history.length < 8) this.history.push(item);
     this.spawnCooldown = Math.max(2.5 - this.level * 0.15 - this.score * 0.02, 0.8);
+  }
+
+  // Parse explanation like "'go' → 'goes': reason" and apply the fix to the sentence
+  _extractCorrection(sentence, explanation) {
+    if (!explanation) return sentence;
+    const match = explanation.match(/'([^']+)'\s*(?:→|->)\s*'([^']+)'/);
+    if (!match) return sentence;
+    const [, wrong, correct] = match;
+    const escaped = wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return sentence.replace(new RegExp(escaped, 'i'), correct);
+  }
+
+  _spawnCorrection(s) {
+    const correctedText = this._extractCorrection(s.item.sentence, s.item.explanation);
+    this.correctionBubbles.push(new CorrectionBubble(s.x, s.y, s.width, correctedText));
   }
 
   _addScore(points, x, y) {
@@ -601,6 +679,11 @@ class GrammarSmash {
       this.floatingScores.push(new FloatingScore(x, y - 28, `🔥 x${this.combo} COMBO`, '#facc15'));
       this.sound.combo();
     }
+  }
+
+  _resetCombo() {
+    this.combo = 0;
+    document.getElementById('hud-combo').textContent = '';
   }
 
   _checkLevelUp() {
@@ -632,9 +715,11 @@ class GrammarSmash {
           this.setState(GAME_STATE.FAIL);
           return true;
         }
-        const pts = s.isFlashing ? 4 : 2;
+        // Wrong sentence hit: show corrected version bouncing upward
+        this._spawnCorrection(s);
+        const pts = s.isBonus ? 4 : 2;
         this._addScore(pts, s.x + s.width / 2, s.y);
-        if (s.isFlashing) this.floatingScores.push(new FloatingScore(s.x + s.width / 2, s.y - 18, '⚡ x2', '#facc15'));
+        if (s.isBonus) this.floatingScores.push(new FloatingScore(s.x + s.width / 2, s.y - 18, '⚡ x2', '#facc15'));
         this.sound.hitWrong();
       }
     }
@@ -655,10 +740,15 @@ class GrammarSmash {
       if (s.hit || s.passed || !this._playerOverlaps(s)) continue;
       s.hit = true;
       if (s.isCorrect) {
-        const pts = s.isFlashing ? 6 : 3;
+        const pts = s.isBonus ? 6 : 3;
         this._addScore(pts, s.x + s.width / 2, s.y);
-        if (s.isFlashing) this.floatingScores.push(new FloatingScore(s.x + s.width / 2, s.y - 18, '⚡ x2', '#facc15'));
+        if (s.isBonus) this.floatingScores.push(new FloatingScore(s.x + s.width / 2, s.y - 18, '⚡ x2', '#facc15'));
         this.sound.eatCorrect();
+      } else if (s.isBonus) {
+        // Bonus wrong sentence: show correction, no FAIL — learning opportunity
+        this._spawnCorrection(s);
+        this._resetCombo();
+        this.sound.hitWrong();
       } else {
         this.failSentence = s.item;
         this.failReason = 'hit-wrong';
@@ -696,6 +786,8 @@ class GrammarSmash {
     this.sentences = this.sentences.filter(s => !s.hit && !s.isOffScreen());
     this.floatingScores.forEach(f => f.update(dt));
     this.floatingScores = this.floatingScores.filter(f => !f.isDead());
+    this.correctionBubbles.forEach(c => c.update(dt));
+    this.correctionBubbles = this.correctionBubbles.filter(c => !c.isDead());
   }
 
   draw(ctx) {
@@ -709,6 +801,7 @@ class GrammarSmash {
     ctx.lineTo(CANVAS_WIDTH, GROUND_Y);
     ctx.stroke();
     this.sentences.forEach(s => s.draw(ctx));
+    this.correctionBubbles.forEach(c => c.draw(ctx));
     this.bullets.forEach(b => b.draw(ctx));
     this.player.draw(ctx);
     this.floatingScores.forEach(f => f.draw(ctx));

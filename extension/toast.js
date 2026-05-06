@@ -1,13 +1,18 @@
-const STORAGE_KEY = 'grammarsmash_last_shown';
+const STORAGE_KEY = 'grammarsmash_shown_times';
 const ONE_DAY_MS = 86_400_000;
+const MAX_DAILY = 3;
 
 async function canShow() {
   const result = await chrome.storage.local.get(STORAGE_KEY);
-  return Date.now() - (result[STORAGE_KEY] || 0) > ONE_DAY_MS;
+  const times = (result[STORAGE_KEY] || []).filter(t => Date.now() - t < ONE_DAY_MS);
+  return times.length < MAX_DAILY;
 }
 
 async function markShown() {
-  await chrome.storage.local.set({ [STORAGE_KEY]: Date.now() });
+  const result = await chrome.storage.local.get(STORAGE_KEY);
+  const times = (result[STORAGE_KEY] || []).filter(t => Date.now() - t < ONE_DAY_MS);
+  times.push(Date.now());
+  await chrome.storage.local.set({ [STORAGE_KEY]: times });
 }
 
 function createToastEl() {

@@ -60,7 +60,7 @@
 ## 스토리지
 
 - `localStorage` (게임 페이지): bestScore, nickname
-- `chrome.storage.local` (content script): 노출 제한 타임스탬프
+- `chrome.storage.local` (content script): 노출 타임스탬프 배열 (`grammarsmash_shown_times`) — 하루 3회 제한
 - Supabase (Phase 6+): 글로벌 리더보드 — textBoi-us 프로젝트 `azgplnfczforimmtpznx`
   - 테이블: `grammarsmash_leaderboard` (nickname UNIQUE, score, created_at)
   - SDK 없이 `fetch()` REST API 직접 호출 (CDN 로드 금지 정책 유지)

@@ -1,4 +1,4 @@
-const IDLE_MS = 45_000;
+const IDLE_MS = 30_000;
 let idleTimer = null;
 
 function resetIdle() {
