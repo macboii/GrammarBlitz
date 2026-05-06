@@ -1,18 +1,22 @@
 const STORAGE_KEY = 'grammarsmash_shown_times';
 const ONE_DAY_MS = 86_400_000;
-const MAX_DAILY = 3;
+const MAX_DAILY = 5;
 
 async function canShow() {
-  const result = await chrome.storage.local.get(STORAGE_KEY);
-  const times = (result[STORAGE_KEY] || []).filter(t => Date.now() - t < ONE_DAY_MS);
-  return times.length < MAX_DAILY;
+  try {
+    const result = await chrome.storage.local.get(STORAGE_KEY);
+    const times = (result[STORAGE_KEY] || []).filter(t => Date.now() - t < ONE_DAY_MS);
+    return times.length < MAX_DAILY;
+  } catch (_) { return false; }
 }
 
 async function markShown() {
-  const result = await chrome.storage.local.get(STORAGE_KEY);
-  const times = (result[STORAGE_KEY] || []).filter(t => Date.now() - t < ONE_DAY_MS);
-  times.push(Date.now());
-  await chrome.storage.local.set({ [STORAGE_KEY]: times });
+  try {
+    const result = await chrome.storage.local.get(STORAGE_KEY);
+    const times = (result[STORAGE_KEY] || []).filter(t => Date.now() - t < ONE_DAY_MS);
+    times.push(Date.now());
+    await chrome.storage.local.set({ [STORAGE_KEY]: times });
+  } catch (_) { /* context invalidated — skip */ }
 }
 
 function createToastEl() {
@@ -22,7 +26,7 @@ function createToastEl() {
     <style>
       :host {
         position: fixed;
-        bottom: 24px;
+        top: 24px;
         right: 24px;
         z-index: 2147483647;
         font-family: 'Courier New', monospace;
@@ -39,8 +43,8 @@ function createToastEl() {
         animation: slide-in 0.3s ease;
       }
       @keyframes slide-in {
-        from { transform: translateY(20px); opacity: 0; }
-        to   { transform: translateY(0);    opacity: 1; }
+        from { transform: translateY(-20px); opacity: 0; }
+        to   { transform: translateY(0);     opacity: 1; }
       }
       .msg { color: #e5e7eb; font-size: 13px; white-space: nowrap; }
       .play {
@@ -75,6 +79,8 @@ function createToastEl() {
 }
 
 async function triggerToast() {
+  // Guard: if extension context already invalidated, bail out silently
+  if (!chrome.runtime?.id) return;
   if (!(await canShow())) return;
   await markShown();
 
@@ -82,11 +88,17 @@ async function triggerToast() {
   document.body.appendChild(toast);
 
   const shadow = toast.shadowRoot;
-  const autoClose = setTimeout(() => toast.remove(), 5000);
+  let autoClose = setTimeout(() => toast.remove(), 5000);
+
+  const wrap = shadow.querySelector('.wrap');
+  wrap.addEventListener('mouseenter', () => clearTimeout(autoClose));
+  wrap.addEventListener('mouseleave', () => {
+    autoClose = setTimeout(() => toast.remove(), 2000);
+  });
 
   shadow.querySelector('.play').addEventListener('click', () => {
     clearTimeout(autoClose);
-    chrome.runtime.sendMessage({ action: 'openGame' });
+    try { chrome.runtime.sendMessage({ action: 'openGame' }); } catch (_) { /* context invalidated */ }
     toast.remove();
   });
 
